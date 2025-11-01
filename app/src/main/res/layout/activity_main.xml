@@ -3,19 +3,43 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:background="#FFFFFF">
 
-    <!-- Màn hình hiển thị -->
-    <TextView
-        android:id="@+id/tvResult"
+    <!-- Vùng hiển thị kết quả và phép tính -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="end|center_vertical"
-        android:text="0"
-        android:textSize="60sp"
-        android:background="#e0e0e0"
-        android:padding="10dp"/>
+        android:orientation="vertical"
+        android:gravity="end|bottom"
+        android:padding="10dp"
+        android:background="#e0e0e0">
+
+        <!-- Hiển thị phép tính (ví dụ: 648 - 6 =) -->
+        <TextView
+            android:id="@+id/tvExpression"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:textSize="20sp"
+            android:textColor="#666666"
+            android:text=""
+            android:ellipsize="start"
+            android:singleLine="true" />
+
+        <!-- Hiển thị kết quả -->
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:text="0"
+            android:textSize="60sp"
+            android:textColor="#000000"
+            android:singleLine="true"
+            android:ellipsize="start" />
+    </LinearLayout>
 
     <!-- Hàng 1 -->
     <LinearLayout
@@ -36,7 +60,7 @@
         <Button android:id="@+id/btn7" android:text="7" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
         <Button android:id="@+id/btn8" android:text="8" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
         <Button android:id="@+id/btn9" android:text="9" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
-        <Button android:id="@+id/btnMul" android:text="x" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
+        <Button android:id="@+id/btnMul" android:text="×" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <!-- Hàng 3 -->
@@ -68,7 +92,7 @@
         android:orientation="horizontal">
         <Button android:id="@+id/btnNeg" android:text="+/-" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
         <Button android:id="@+id/btn0" android:text="0" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
-        <Button android:id="@+id/btn." android:text="." android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
+        <Button android:id="@+id/btnDot" android:text="." android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
         <Button android:id="@+id/btnEq" android:text="=" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content"/>
     </LinearLayout>
 
