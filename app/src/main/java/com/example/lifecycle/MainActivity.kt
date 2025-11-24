@@ -1,145 +1,122 @@
 package com.example.lifecycle
 
-import android.app.AlertDialog
-import android.graphics.Color
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var etMssv: EditText
+    private lateinit var etName: EditText
+    private lateinit var btnAdd: Button
+    private lateinit var btnUpdate: Button
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: StudentAdapter
-    private val studentList = mutableListOf<Student>()
 
-    // Danh sách màu giả lập giống Gmail
-    private val colors = listOf(
-        Color.parseColor("#4285F4"), // Blue
-        Color.parseColor("#DB4437"), // Red
-        Color.parseColor("#0F9D58"), // Green
-        Color.parseColor("#FF5722")  // Orange
-    )
+    private val studentList = mutableListOf<Student>()
+    private var selectedStudent: Student? = null // Biến lưu sinh viên đang được chọn để sửa
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val now = getCurrentTime()
-        studentList.add(Student(UUID.randomUUID().toString(), "Edurila.com", "WEB-001", colors[0], "10:00 AM"))
-        studentList.add(Student(UUID.randomUUID().toString(), "Chris Abad", "CMP-002", colors[3], "11:00 AM"))
-        studentList.add(Student(UUID.randomUUID().toString(), "Tuto.com", "SEO-003", colors[2], "12:00 AM"))
-        studentList.add(Student(UUID.randomUUID().toString(), "Support", "OVH-004", Color.GRAY, "13:00 AM"))
-
+        // Ánh xạ View
+        etMssv = findViewById(R.id.etMssv)
+        etName = findViewById(R.id.etName)
+        btnAdd = findViewById(R.id.btnAdd)
+        btnUpdate = findViewById(R.id.btnUpdate)
         recyclerView = findViewById(R.id.recyclerView)
-        val fabAdd: FloatingActionButton = findViewById(R.id.fabAdd)
 
-        // Khởi tạo Adapter
+        // Dữ liệu mẫu giống ảnh
+        studentList.add(Student("1", "Nguyễn Văn A", "20200001"))
+        studentList.add(Student("2", "Trần Thị B", "20200002"))
+        studentList.add(Student("3", "Lê Văn C", "20200003"))
+
+        // Cấu hình Adapter
         adapter = StudentAdapter(studentList,
-            onItemClick = { student -> showUpdateDialog(student) },
-            onDeleteClick = { student -> deleteStudent(student) }
+            onItemClick = { student ->
+                // Khi click vào item: Đưa dữ liệu lên ô nhập
+                etMssv.setText(student.mssv)
+                etName.setText(student.name)
+                selectedStudent = student // Lưu lại để biết đang sửa ai
+            },
+            onDeleteClick = { student ->
+                deleteStudent(student)
+            }
         )
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
-        // Sự kiện nút Add (FAB)
-        fabAdd.setOnClickListener {
-            showAddDialog()
+        // Xử lý nút ADD
+        btnAdd.setOnClickListener {
+            val mssv = etMssv.text.toString()
+            val name = etName.text.toString()
+
+            if (mssv.isNotEmpty() && name.isNotEmpty()) {
+                // Kiểm tra trùng MSSV (tùy chọn)
+                if (studentList.any { it.mssv == mssv }) {
+                    Toast.makeText(this, "MSSV đã tồn tại!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val newStudent = Student(System.currentTimeMillis().toString(), name, mssv)
+                studentList.add(newStudent)
+                adapter.notifyDataSetChanged() // Cập nhật toàn bộ list
+
+                clearInput() // Xóa trắng ô nhập
+                Toast.makeText(this, "Đã thêm!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Xử lý nút UPDATE
+        btnUpdate.setOnClickListener {
+            val mssv = etMssv.text.toString()
+            val name = etName.text.toString()
+
+            if (selectedStudent != null) {
+                if (mssv.isNotEmpty() && name.isNotEmpty()) {
+                    // Cập nhật thông tin
+                    selectedStudent?.name = name
+                    selectedStudent?.mssv = mssv
+
+                    adapter.notifyDataSetChanged()
+
+                    clearInput()
+                    selectedStudent = null // Reset trạng thái chọn
+                    Toast.makeText(this, "Đã cập nhật!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Thông tin không được để trống", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "Vui lòng chọn sinh viên trong danh sách để sửa", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     // Hàm xóa sinh viên
     private fun deleteStudent(student: Student) {
-        val position = studentList.indexOf(student)
-        if (position != -1) {
-            studentList.removeAt(position)
-            adapter.notifyItemRemoved(position)
-            Toast.makeText(this, "Đã xóa ${student.name}", Toast.LENGTH_SHORT).show()
+        studentList.remove(student)
+        adapter.notifyDataSetChanged()
+
+        // Nếu xóa đúng người đang chọn để sửa thì reset ô nhập
+        if (selectedStudent == student) {
+            clearInput()
+            selectedStudent = null
         }
+        Toast.makeText(this, "Đã xóa!", Toast.LENGTH_SHORT).show()
     }
 
-    // Hộp thoại Thêm mới
-    private fun showAddDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_student, null)
-        val etName: EditText = dialogView.findViewById(R.id.etName)
-        val etMssv: EditText = dialogView.findViewById(R.id.etMssv)
-        val btnSave: Button = dialogView.findViewById(R.id.btnSave)
-        val tvTitle: TextView = dialogView.findViewById(R.id.tvDialogTitle)
-
-        tvTitle.text = "Thêm Sinh Viên Mới"
-        btnSave.text = "Add"
-
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        btnSave.setOnClickListener {
-            val name = etName.text.toString()
-            val mssv = etMssv.text.toString()
-
-            if (name.isNotEmpty() && mssv.isNotEmpty()) {
-                val randomColor = colors[Random().nextInt(colors.size)]
-                val timeNow = getCurrentTime()
-                val newStudent = Student(UUID.randomUUID().toString(), name, mssv, randomColor, timeNow )
-                studentList.add(0, newStudent) // Thêm lên đầu
-                adapter.notifyItemInserted(0)
-                recyclerView.scrollToPosition(0)
-                dialog.dismiss()
-            } else {
-                Toast.makeText(this, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
-            }
-        }
-        dialog.show()
-    }
-    //lấy thời gian thực
-    private fun getCurrentTime(): String {
-        val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
-        return sdf.format(Date())
-    }
-    // Hộp thoại Cập nhật
-    private fun showUpdateDialog(student: Student) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_student, null)
-        val etName: EditText = dialogView.findViewById(R.id.etName)
-        val etMssv: EditText = dialogView.findViewById(R.id.etMssv)
-        val btnSave: Button = dialogView.findViewById(R.id.btnSave)
-        val tvTitle: TextView = dialogView.findViewById(R.id.tvDialogTitle)
-
-        tvTitle.text = "Cập Nhật Sinh Viên"
-        btnSave.text = "Update"
-
-        // Điền dữ liệu cũ
-        etName.setText(student.name)
-        etMssv.setText(student.mssv)
-
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        btnSave.setOnClickListener {
-            val name = etName.text.toString()
-            val mssv = etMssv.text.toString()
-
-            if (name.isNotEmpty() && mssv.isNotEmpty()) {
-                student.name = name
-                student.mssv = mssv
-                val position = studentList.indexOf(student)
-                adapter.notifyItemChanged(position)
-                dialog.dismiss()
-            } else {
-                Toast.makeText(this, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
-            }
-        }
-        dialog.show()
+    // Hàm xóa trắng ô nhập
+    private fun clearInput() {
+        etMssv.text.clear()
+        etName.text.clear()
+        etMssv.requestFocus()
     }
 }

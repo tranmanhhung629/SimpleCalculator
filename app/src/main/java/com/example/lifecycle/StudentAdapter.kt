@@ -1,6 +1,5 @@
 package com.example.lifecycle
 
-import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,34 +8,24 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class StudentAdapter(
-    private val studentList: MutableList<Student>,
+    private val studentList: List<Student>,
     private val onItemClick: (Student) -> Unit,
     private val onDeleteClick: (Student) -> Unit
 ) : RecyclerView.Adapter<StudentAdapter.StudentViewHolder>() {
 
     inner class StudentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvAvatar: TextView = itemView.findViewById(R.id.tvAvatar)
         val tvName: TextView = itemView.findViewById(R.id.tvName)
         val tvMssv: TextView = itemView.findViewById(R.id.tvMssv)
         val btnDelete: ImageView = itemView.findViewById(R.id.btnDelete)
-        val tvTime: TextView = itemView.findViewById(R.id.tvTime) // Ánh xạ view
+
         fun bind(student: Student) {
             tvName.text = student.name
-            tvMssv.text = "MSSV: ${student.mssv}"
-            tvTime.text = student.time //gán thời gian thực vào
-            // Set ký tự đầu tiên cho Avatar
-            if (student.name.isNotEmpty()) {
-                tvAvatar.text = student.name.substring(0, 1).uppercase()
-            }
+            tvMssv.text = student.mssv
 
-            // Set màu nền cho Avatar
-            val background = tvAvatar.background as GradientDrawable
-            background.setColor(student.color)
-
-            // Sự kiện click vào item để sửa
+            // Click vào dòng -> Đẩy dữ liệu lên Activity để Update
             itemView.setOnClickListener { onItemClick(student) }
 
-            // Sự kiện click nút xóa (ngôi sao)
+            // Click vào thùng rác -> Xóa
             btnDelete.setOnClickListener { onDeleteClick(student) }
         }
     }
